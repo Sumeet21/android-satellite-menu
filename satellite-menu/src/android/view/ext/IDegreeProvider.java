@@ -1,7 +1,7 @@
 package android.view.ext;
 
 /**
- * Interface for providing degrees between satellites. 
+ * Interface for providing degrees between satellites.
  * 
  * @author Siyamed SINIR
  *

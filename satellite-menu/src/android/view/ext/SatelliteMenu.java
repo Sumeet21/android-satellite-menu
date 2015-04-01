@@ -21,12 +21,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
- * Provides a "Path" like menu for android. ??
- * 
- * TODO: tell about usage
+ * Provides a "Path" like menu for android. ?? TODO: tell about usage
  * 
  * @author Siyamed SINIR
  * 
+ *         Modified by
+ * @author Sumeet Raj Gehi
  */
 public class SatelliteMenu extends FrameLayout {
 
@@ -50,12 +50,12 @@ public class SatelliteMenu extends FrameLayout {
 	// ?? how to save/restore?
 	private IDegreeProvider gapDegreesProvider = new DefaultDegreeProvider();
 
-	//States of these variables are saved
+	// States of these variables are saved
 	private boolean rotated = false;
 	private int measureDiff = 0;
-	//States of these variables are saved - Also configured from XML 
+	// States of these variables are saved - Also configured from XML
 	private float totalSpacingDegree = DEFAULT_TOTAL_SPACING_DEGREES;
-	private int satelliteDistance = DEFAULT_SATELLITE_DISTANCE;	
+	private int satelliteDistance = DEFAULT_SATELLITE_DISTANCE;
 	private int expandDuration = DEFAULT_EXPAND_DURATION;
 	private boolean closeItemsOnClick = DEFAULT_CLOSE_ON_CLICK;
 
@@ -75,22 +75,34 @@ public class SatelliteMenu extends FrameLayout {
 	}
 
 	private void init(Context context, AttributeSet attrs, int defStyle) {
-		LayoutInflater.from(context).inflate(R.layout.sat_main, this, true);		
+		LayoutInflater.from(context).inflate(R.layout.sat_main, this, true);
 		imgMain = (ImageView) findViewById(R.id.sat_main);
 
-		if(attrs != null){			
-            TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.SatelliteMenu, defStyle, 0);					
-			satelliteDistance = typedArray.getDimensionPixelSize(R.styleable.SatelliteMenu_satelliteDistance, DEFAULT_SATELLITE_DISTANCE);
-			totalSpacingDegree = typedArray.getFloat(R.styleable.SatelliteMenu_totalSpacingDegree, DEFAULT_TOTAL_SPACING_DEGREES);
-			closeItemsOnClick = typedArray.getBoolean(R.styleable.SatelliteMenu_closeOnClick, DEFAULT_CLOSE_ON_CLICK);
-			expandDuration = typedArray.getInt(R.styleable.SatelliteMenu_expandDuration, DEFAULT_EXPAND_DURATION);
-			//float satelliteDistance = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 170, getResources().getDisplayMetrics());
+		if (attrs != null) {
+			TypedArray typedArray = context.obtainStyledAttributes(attrs,
+					R.styleable.SatelliteMenu, defStyle, 0);
+			satelliteDistance = typedArray.getDimensionPixelSize(
+					R.styleable.SatelliteMenu_satelliteDistance,
+					DEFAULT_SATELLITE_DISTANCE);
+			totalSpacingDegree = typedArray.getFloat(
+					R.styleable.SatelliteMenu_totalSpacingDegree,
+					DEFAULT_TOTAL_SPACING_DEGREES);
+			closeItemsOnClick = typedArray.getBoolean(
+					R.styleable.SatelliteMenu_closeOnClick,
+					DEFAULT_CLOSE_ON_CLICK);
+			expandDuration = typedArray.getInt(
+					R.styleable.SatelliteMenu_expandDuration,
+					DEFAULT_EXPAND_DURATION);
+			// float satelliteDistance =
+			// TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 170,
+			// getResources().getDisplayMetrics());
 			typedArray.recycle();
 		}
-		
-		
-		mainRotateLeft = SatelliteAnimationCreator.createMainButtonAnimation(context);
-		mainRotateRight = SatelliteAnimationCreator.createMainButtonInverseAnimation(context);
+
+		mainRotateLeft = SatelliteAnimationCreator
+				.createMainButtonAnimation(context);
+		mainRotateRight = SatelliteAnimationCreator
+				.createMainButtonInverseAnimation(context);
 
 		Animation.AnimationListener plusAnimationListener = new Animation.AnimationListener() {
 			@Override
@@ -113,14 +125,14 @@ public class SatelliteMenu extends FrameLayout {
 		imgMain.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				SatelliteMenu.this.onClick();
+				SatelliteMenu.this.onClick(v);
 			}
 		});
 
 		internalItemClickListener = new InternalSatelliteOnClickListener(this);
 	}
 
-	private void onClick() {
+	private void onClick(View view) {
 		if (plusAnimationActive.compareAndSet(false, true)) {
 			if (!rotated) {
 				imgMain.startAnimation(mainRotateLeft);
@@ -199,9 +211,13 @@ public class SatelliteMenu extends FrameLayout {
 				cloneView.setImageDrawable(menuItem.getImgDrawable());
 			}
 
-			Animation itemOut = SatelliteAnimationCreator.createItemOutAnimation(getContext(), index,expandDuration, finalX, finalY);
-			Animation itemIn = SatelliteAnimationCreator.createItemInAnimation(getContext(), index, expandDuration, finalX, finalY);
-			Animation itemClick = SatelliteAnimationCreator.createItemClickAnimation(getContext());
+			Animation itemOut = SatelliteAnimationCreator
+					.createItemOutAnimation(getContext(), index,
+							expandDuration, finalX, finalY);
+			Animation itemIn = SatelliteAnimationCreator.createItemInAnimation(
+					getContext(), index, expandDuration, finalX, finalY);
+			Animation itemClick = SatelliteAnimationCreator
+					.createItemClickAnimation(getContext());
 
 			menuItem.setView(itemView);
 			menuItem.setCloneView(cloneView);
@@ -211,10 +227,14 @@ public class SatelliteMenu extends FrameLayout {
 			menuItem.setFinalX(finalX);
 			menuItem.setFinalY(finalY);
 
-			itemIn.setAnimationListener(new SatelliteAnimationListener(itemView, true, viewToItemMap));
-			itemOut.setAnimationListener(new SatelliteAnimationListener(itemView, false, viewToItemMap));
-			itemClick.setAnimationListener(new SatelliteItemClickAnimationListener(this, menuItem.getId()));
-			
+			itemIn.setAnimationListener(new SatelliteAnimationListener(
+					itemView, true, viewToItemMap));
+			itemOut.setAnimationListener(new SatelliteAnimationListener(
+					itemView, false, viewToItemMap));
+			itemClick
+					.setAnimationListener(new SatelliteItemClickAnimationListener(
+							this, menuItem.getId(), cloneView, itemView));
+
 			this.addView(itemView);
 			this.addView(cloneView);
 			viewToItemMap.put(itemView, menuItem);
@@ -225,20 +245,17 @@ public class SatelliteMenu extends FrameLayout {
 		this.addView(imgMain);
 	}
 
-	private float[] getDegrees(int count) {
-		return gapDegreesProvider.getDegrees(count, totalSpacingDegree);
-	}
-
-	private void recalculateMeasureDiff() {
-		int itemWidth = 0;
-		if (menuItems.size() > 0) {
-			itemWidth = menuItems.get(0).getView().getWidth();
-		}
-		measureDiff = Float.valueOf(satelliteDistance * 0.2f).intValue()
-				+ itemWidth;
-	}
-
 	private void resetItems() {
+		if (menuItems.size() > 0) {
+			List<SatelliteMenuItem> items = new ArrayList<SatelliteMenuItem>(
+					menuItems);
+			menuItems.clear();
+			this.removeAllViews();
+			addItems(items);
+		}
+	}
+
+	public void resetItems2() {
 		if (menuItems.size() > 0) {
 			List<SatelliteMenuItem> items = new ArrayList<SatelliteMenuItem>(
 					menuItems);
@@ -258,41 +275,64 @@ public class SatelliteMenu extends FrameLayout {
 		setMeasuredDimension(totalWidth, totalHeight);
 	}
 
-	private static class SatelliteItemClickAnimationListener implements Animation.AnimationListener {
+	private static class SatelliteItemClickAnimationListener implements
+			Animation.AnimationListener {
 		private WeakReference<SatelliteMenu> menuRef;
-		private int tag;
-		
-		public SatelliteItemClickAnimationListener(SatelliteMenu menu, int tag) {
+		private int id;
+		private ImageView cloneView;
+		private ImageView itemView;
+
+		public SatelliteItemClickAnimationListener(SatelliteMenu menu, int tag,
+				ImageView cloneview, ImageView itemView) {
 			this.menuRef = new WeakReference<SatelliteMenu>(menu);
-			this.tag = tag;
+			this.id = tag;
+			this.cloneView = cloneview;
+			this.itemView = itemView;
 		}
-		
+
 		@Override
 		public void onAnimationEnd(Animation animation) {
 		}
-		
+
 		@Override
 		public void onAnimationRepeat(Animation animation) {
 		}
-		
+
 		@Override
 		public void onAnimationStart(Animation animation) {
 			SatelliteMenu menu = menuRef.get();
-			if(menu != null && menu.closeItemsOnClick){
+			if (menu != null && menu.closeItemsOnClick) {
 				menu.close();
-				if(menu.itemClickedListener != null){
-					menu.itemClickedListener.eventOccured(tag);
+				if (menu.itemClickedListener != null) {
+					menu.itemClickedListener.onClick(id);
+					menu.itemClickedListener
+							.changeIcon(id, cloneView, itemView);
 				}
 			}
-		}		
+		}
 	}
-	
-	private static class SatelliteAnimationListener implements Animation.AnimationListener {
+
+	private float[] getDegrees(int count) {
+		return gapDegreesProvider.getDegrees(count, totalSpacingDegree);
+	}
+
+	private void recalculateMeasureDiff() {
+		int itemWidth = 0;
+		if (menuItems.size() > 0) {
+			itemWidth = menuItems.get(0).getView().getWidth();
+		}
+		measureDiff = Float.valueOf(satelliteDistance * 0.2f).intValue()
+				+ itemWidth;
+	}
+
+	private static class SatelliteAnimationListener implements
+			Animation.AnimationListener {
 		private WeakReference<View> viewRef;
 		private boolean isInAnimation;
 		private Map<View, SatelliteMenuItem> viewToItemMap;
 
-		public SatelliteAnimationListener(View view, boolean isIn, Map<View, SatelliteMenuItem> viewToItemMap) {
+		public SatelliteAnimationListener(View view, boolean isIn,
+				Map<View, SatelliteMenuItem> viewToItemMap) {
 			this.viewRef = new WeakReference<View>(view);
 			this.isInAnimation = isIn;
 			this.viewToItemMap = viewToItemMap;
@@ -341,14 +381,15 @@ public class SatelliteMenu extends FrameLayout {
 	public Map<View, SatelliteMenuItem> getViewToItemMap() {
 		return viewToItemMap;
 	}
-	
+
 	private static FrameLayout.LayoutParams getLayoutParams(View view) {
 		return (FrameLayout.LayoutParams) view.getLayoutParams();
 	}
 
-	private static class InternalSatelliteOnClickListener implements View.OnClickListener {
+	private static class InternalSatelliteOnClickListener implements
+			View.OnClickListener {
 		private WeakReference<SatelliteMenu> menuRef;
-		
+
 		public InternalSatelliteOnClickListener(SatelliteMenu menu) {
 			this.menuRef = new WeakReference<SatelliteMenu>(menu);
 		}
@@ -356,26 +397,26 @@ public class SatelliteMenu extends FrameLayout {
 		@Override
 		public void onClick(View v) {
 			SatelliteMenu menu = menuRef.get();
-			if(menu != null){
+			if (menu != null) {
 				SatelliteMenuItem menuItem = menu.getViewToItemMap().get(v);
-				v.startAnimation(menuItem.getClickAnimation());	
+				v.startAnimation(menuItem.getClickAnimation());
 			}
 		}
 	}
-	
+
 	/**
-	 * Sets the click listener for satellite items.
+	 * TODO items Sets the click listener for satellite items.
 	 * 
 	 * @param itemClickedListener
 	 */
-	public void setOnItemClickedListener(SateliteClickedListener itemClickedListener) {
+	public void setOnItemClickedListener(
+			SateliteClickedListener itemClickedListener) {
 		this.itemClickedListener = itemClickedListener;
 	}
 
-	
 	/**
-	 * Defines the algorithm to define the gap between each item. 
-	 * Note: Calling before adding items is strongly recommended. 
+	 * Defines the algorithm to define the gap between each item. Note: Calling
+	 * before adding items is strongly recommended.
 	 * 
 	 * @param gapDegreeProvider
 	 */
@@ -388,7 +429,8 @@ public class SatelliteMenu extends FrameLayout {
 	 * Defines the total space between the initial and final item in degrees.
 	 * Note: Calling before adding items is strongly recommended.
 	 * 
-	 * @param totalSpacingDegree The degree between initial and final items. 
+	 * @param totalSpacingDegree
+	 *            The degree between initial and final items.
 	 */
 	public void setTotalSpacingDegree(float totalSpacingDegree) {
 		this.totalSpacingDegree = totalSpacingDegree;
@@ -396,10 +438,11 @@ public class SatelliteMenu extends FrameLayout {
 	}
 
 	/**
-	 * Sets the distance of items from the center in pixels.
-	 * Note: Calling before adding items is strongly recommended.
+	 * Sets the distance of items from the center in pixels. Note: Calling
+	 * before adding items is strongly recommended.
 	 * 
-	 * @param distance the distance of items to center in pixels.
+	 * @param distance
+	 *            the distance of items to center in pixels.
 	 */
 	public void setSatelliteDistance(int distance) {
 		this.satelliteDistance = distance;
@@ -407,20 +450,23 @@ public class SatelliteMenu extends FrameLayout {
 	}
 
 	/**
-	 * Sets the duration for expanding and collapsing the items in miliseconds. 
+	 * Sets the duration for expanding and collapsing the items in miliseconds.
 	 * Note: Calling before adding items is strongly recommended.
 	 * 
-	 * @param expandDuration the duration for expanding and collapsing the items in miliseconds.
+	 * @param expandDuration
+	 *            the duration for expanding and collapsing the items in
+	 *            miliseconds.
 	 */
 	public void setExpandDuration(int expandDuration) {
 		this.expandDuration = expandDuration;
 		resetItems();
 	}
-	
+
 	/**
 	 * Sets the image resource for the center button.
 	 * 
-	 * @param resource The image resource.
+	 * @param resource
+	 *            The image resource.
 	 */
 	public void setMainImage(int resource) {
 		this.imgMain.setImageResource(resource);
@@ -429,36 +475,45 @@ public class SatelliteMenu extends FrameLayout {
 	/**
 	 * Sets the image drawable for the center button.
 	 * 
-	 * @param resource The image drawable.
+	 * @param resource
+	 *            The image drawable.
 	 */
 	public void setMainImage(Drawable drawable) {
 		this.imgMain.setImageDrawable(drawable);
 	}
 
 	/**
-	 * Defines if the menu shall collapse the items when an item is clicked. Default value is true. 
+	 * Defines if the menu shall collapse the items when an item is clicked.
+	 * Default value is true.
 	 * 
 	 * @param closeItemsOnClick
 	 */
 	public void setCloseItemsOnClick(boolean closeItemsOnClick) {
 		this.closeItemsOnClick = closeItemsOnClick;
 	}
-	
+
 	/**
-	 * The listener class for item click event. 
+	 * The listener class for item click event.
+	 * 
 	 * @author Siyamed SINIR
 	 */
 	public interface SateliteClickedListener {
 		/**
-		 * When an item is clicked, informs with the id of the item, which is given while adding the items. 
+		 * When an item is clicked, informs with the id of the item, which is
+		 * given while adding the items.
 		 * 
-		 * @param id The id of the item. 
+		 * @param id
+		 *            The id of the item.
+		 * @changeIcon update the icon after click
 		 */
-		public void eventOccured(int id);
+		public void onClick(int id);
+
+		public void changeIcon(int tag, ImageView cloneview, ImageView ItemView);
+
 	}
 
 	/**
-	 * Expand the menu items. 
+	 * Expand the menu items.
 	 */
 	public void expand() {
 		openItems();
@@ -504,7 +559,7 @@ public class SatelliteMenu extends FrameLayout {
 		private int measureDiff;
 		private int expandDuration;
 		private boolean closeItemsOnClick;
-		
+
 		SavedState(Parcelable superState) {
 			super(superState);
 		}
