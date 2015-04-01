@@ -1,5 +1,5 @@
 #Satellite Menu
-Update  added option to change icon drawable when user click to show user what had selected
+Update  **added option to change icon drawable when user click to show user what had selected**
 <a href="https://github.com/siyamed/android-satellite-menu/issues/21"> Redraw icons</a>
 
 'Path' has a very attractive menu sitting on the left bottom corner of the screen. Satellite Menu is the open version of this menu. 
